@@ -134,12 +134,19 @@ func getFileLine(
 
 	indentation := strings.Repeat("  ", visualDepth)
 
-	if hasStagedChanges && !hasUnstagedChanges {
+	switch node.StatusSection {
+	case filetree.StatusSectionStaged:
 		nameColor = style.FgGreen
-	} else if hasStagedChanges {
-		nameColor = style.FgYellow
-	} else {
+	case filetree.StatusSectionUnstaged, filetree.StatusSectionUntracked:
 		nameColor = theme.DefaultTextColor
+	default:
+		if hasStagedChanges && !hasUnstagedChanges {
+			nameColor = style.FgGreen
+		} else if hasStagedChanges {
+			nameColor = style.FgYellow
+		} else {
+			nameColor = theme.DefaultTextColor
+		}
 	}
 
 	if file == nil {
@@ -187,6 +194,21 @@ func getFileLine(
 	}
 
 	return output
+}
+
+// StyleFileSectionHeader colors a files-panel heading. The text is the same
+// "─── …" form as the other list headings.
+func StyleFileSectionHeader(section filetree.StatusSection, text string) string {
+	var headerStyle style.TextStyle
+	switch section {
+	case filetree.StatusSectionStaged:
+		headerStyle = style.FgGreen.SetBold()
+	case filetree.StatusSectionUnstaged:
+		headerStyle = theme.UnstagedChangesColor.SetBold()
+	default:
+		headerStyle = style.FgYellow.SetBold()
+	}
+	return headerStyle.Sprint(text)
 }
 
 // fileLabel returns what to show in parentheses after the name of an entry of

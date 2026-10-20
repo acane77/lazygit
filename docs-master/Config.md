@@ -117,6 +117,9 @@ gui:
   # Valid names are: 'status', 'files', 'worktrees', 'submodules', 'branches',
   # 'remotes', 'tags', 'commits', 'reflog', 'stash'. 'files', 'branches', and
   # 'commits' must always be included; they can't be hidden.
+  # A panel whose first tab is commits is drawn above the diff, at about 30% of
+  # that column, instead of in this list's vertical stack.
+  # The branches panel stays one line tall until it is focused.
   sidePanels:
     - [status]
     - [files, worktrees, submodules]
@@ -258,11 +261,12 @@ gui:
   # If true, show the '5 of 20' footer at the bottom of list views
   showListFooter: true
 
-  # If true, display the files in the file views as a tree. If false, display the
-  # files as a flat list.
+  # If true, display the files in the file views as a tree. If false, display them
+  # as a flat list. The files panel's flat list is grouped under Staged, Unstaged
+  # and Untracked headings, with one line per changed file.
   # This can be toggled from within Lazygit with the '`' key, but that will not
   # change the default.
-  showFileTree: true
+  showFileTree: false
 
   # If true, add a "/" root item in the file tree representing the root of the
   # repository. It is only added when necessary, i.e. when there is more than one
@@ -283,7 +287,7 @@ gui:
   showRandomTip: true
 
   # If true, show the command log
-  showCommandLog: true
+  showCommandLog: false
 
   # If true, show the bottom line that contains keybinding info and useful
   # buttons. If false, this line will be hidden except to display a loader for an

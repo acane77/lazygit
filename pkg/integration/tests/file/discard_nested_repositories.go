@@ -27,6 +27,7 @@ var DiscardNestedRepositories = NewIntegrationTest(NewIntegrationTestArgs{
 		t.Views().Files().
 			IsFocused().
 			Lines(
+				Equals("─── Untracked"),
 				Equals("?? modules/sub (removed submodule)").IsSelected(),
 				Equals("?? nested (nested repository)"),
 			).
@@ -46,6 +47,7 @@ var DiscardNestedRepositories = NewIntegrationTest(NewIntegrationTestArgs{
 					Cancel()
 			}).
 			Lines(
+				Equals("─── Untracked"),
 				Equals("?? modules/sub (removed submodule)").IsSelected(),
 				Equals("?? nested (nested repository)").IsSelected(),
 			).

@@ -77,7 +77,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 | `` d `` | Bekijk 'veranderingen ongedaan maken' opties | View options for discarding changes to the selected file. |
 | `` g `` | Bekijk upstream reset opties |  |
 | `` D `` | Resetten | View reset options for working tree (e.g. nuking the working tree). |
-| `` ` `` | Toggle bestandsboom weergave | Toggle file view between flat and tree layout. Flat layout shows all file paths in a single list, tree layout groups files by directory.<br><br>The default can be changed in the config file with the key 'gui.showFileTree'. |
+| `` ` `` | Toggle bestandsboom weergave | Toggle file view between flat and tree layout. Flat layout shows all file paths in a single list; in the files panel that list is grouped under Staged, Unstaged and Untracked. Tree layout groups files by directory.<br><br>The default can be changed in the config file with the key 'gui.showFileTree'. |
 | `` <ctrl+t> `` | Open externe diff applicatie (git difftool) |  |
 | `` M `` | Bekijk merge conflict opties | Bekijk opties voor het oplossen van mergeconflicten. |
 | `` f `` | Fetch | Fetch changes from remote. |
@@ -146,7 +146,7 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 | `` <space> `` | Toggle bestand inbegrepen in patch | Toggle whether the file is included in the custom patch. See https://github.com/jesseduffield/lazygit#rebase-magic-custom-patches. |
 | `` a `` | Toggle all files | Add/remove all commit's files to custom patch. See https://github.com/jesseduffield/lazygit#rebase-magic-custom-patches. |
 | `` <enter> `` | Focus file diff / Toggle directory | If a file is selected, focus its diff so you can act on individual lines. If it is a directory, collapse or expand it. |
-| `` ` `` | Toggle bestandsboom weergave | Toggle file view between flat and tree layout. Flat layout shows all file paths in a single list, tree layout groups files by directory.<br><br>The default can be changed in the config file with the key 'gui.showFileTree'. |
+| `` ` `` | Toggle bestandsboom weergave | Toggle file view between flat and tree layout. Flat layout shows all file paths in a single list; in the files panel that list is grouped under Staged, Unstaged and Untracked. Tree layout groups files by directory.<br><br>The default can be changed in the config file with the key 'gui.showFileTree'. |
 | `` - `` | Collapse all files | Collapse all directories in the files tree |
 | `` = `` | Vouw alle bestanden uit | Vouw alle mappen in de bestandsstructuur uit |
 | `` 0 `` | Focus main view |  |

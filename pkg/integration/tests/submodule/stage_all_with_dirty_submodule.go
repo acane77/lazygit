@@ -26,20 +26,26 @@ var StageAllWithDirtySubmodule = NewIntegrationTest(NewIntegrationTestArgs{
 	Run: func(t *TestDriver, keys config.KeybindingConfig) {
 		t.Views().Files().Focus().
 			Lines(
+				Equals("─── Unstaged"),
 				Equals(" M my_submodule_path (submodule)"),
+				Equals("─── Untracked"),
 				Equals("?? regular_file"),
 			).
 			// Stage all: the regular file gets staged; the submodule can't be.
 			Press(keys.Files.ToggleStagedAll).
 			Lines(
-				Equals(" M my_submodule_path (submodule)"),
+				Equals("─── Staged"),
 				Equals("A  regular_file"),
+				Equals("─── Unstaged"),
+				Equals(" M my_submodule_path (submodule)"),
 			).
 			// Stage all again: nothing is stageable, but the regular file is
 			// staged, so this unstages it rather than erroring on the submodule.
 			Press(keys.Files.ToggleStagedAll).
 			Lines(
+				Equals("─── Unstaged"),
 				Equals(" M my_submodule_path (submodule)"),
+				Equals("─── Untracked"),
 				Equals("?? regular_file"),
 			)
 	},

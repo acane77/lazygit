@@ -153,6 +153,7 @@ func (self *FileTreeViewModel) findNewSelectedIdx(prevNodes []*FileNode, currNod
 
 	for _, prevNode := range prevNodes {
 		selectedPaths := getPaths(prevNode)
+		fallback := -1
 
 		for idx, node := range currNodes {
 			paths := getPaths(node)
@@ -161,9 +162,21 @@ func (self *FileTreeViewModel) findNewSelectedIdx(prevNodes []*FileNode, currNod
 			// This is because the new should be in the same position as the rename was meaning less cursor jumping
 			foundOldFileInRename := prevNode.File != nil && prevNode.File.IsRename() && node.GetPath() == prevNode.File.PreviousPath
 			foundNode := utils.StringArraysOverlap(paths, selectedPaths) && !foundOldFileInRename
-			if foundNode {
+			if !foundNode {
+				continue
+			}
+			// The same path can be listed under two headings. Stay on the heading
+			// the cursor was already on; if that heading no longer has the path,
+			// take the other copy.
+			if node.StatusSection == prevNode.StatusSection {
 				return idx
 			}
+			if fallback == -1 {
+				fallback = idx
+			}
+		}
+		if fallback != -1 {
+			return fallback
 		}
 	}
 

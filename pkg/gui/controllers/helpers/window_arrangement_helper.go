@@ -189,20 +189,66 @@ func mainPanelChildren(args WindowArrangementArgs) []*boxlayout.Box {
 		mainPanelsDirection = boxlayout.COLUMN
 	}
 
-	result := []*boxlayout.Box{
-		{
+	// The commits window sits above the diff, about 30% of this column, so the
+	// left column can give its spare height to the files panel.
+	commitsOnRight := commitsWindowOnRight(args.UserConfig)
+	fullScreen := args.ScreenMode == types.SCREEN_FULL
+	commitsTakesOver := fullScreen && commitsOnRight && args.CurrentWindow == "commits"
+	diffTakesOver := fullScreen && (args.CurrentWindow == "main" || args.CurrentWindow == "secondary")
+
+	result := []*boxlayout.Box{}
+	if commitsOnRight && !diffTakesOver {
+		weight := 3
+		if commitsTakesOver {
+			weight = 1
+		}
+		result = append(result, &boxlayout.Box{Window: "commits", Weight: weight})
+	}
+	if !commitsTakesOver {
+		weight := 1
+		if commitsOnRight && !diffTakesOver {
+			weight = 7
+		}
+		result = append(result, &boxlayout.Box{
 			Direction: mainPanelsDirection,
 			Children:  mainSectionChildren(args),
-			Weight:    1,
-		},
+			Weight:    weight,
+		})
 	}
-	if args.ShowExtrasWindow {
+	if args.ShowExtrasWindow && !commitsTakesOver {
 		result = append(result, &boxlayout.Box{
 			Window: "extras",
 			Size:   getExtrasWindowSize(args),
 		})
 	}
 	return result
+}
+
+// commitsWindowOnRight reports whether the commits panel is its own window, in
+// which case it is drawn above the diff instead of in the left column.
+func commitsWindowOnRight(userConfig *config.UserConfig) bool {
+	for _, panel := range userConfig.Gui.SidePanels {
+		if len(panel) > 0 && panel[0] == "commits" {
+			return true
+		}
+	}
+	return false
+}
+
+// leftSideWindowNames is the left column. The commits window is omitted when it
+// is drawn above the diff.
+func leftSideWindowNames(userConfig *config.UserConfig) []string {
+	windows := sideWindowNames(userConfig)
+	if !commitsWindowOnRight(userConfig) {
+		return windows
+	}
+	filtered := make([]string, 0, len(windows))
+	for _, window := range windows {
+		if window != "commits" {
+			filtered = append(filtered, window)
+		}
+	}
+	return filtered
 }
 
 func MergeMaps[K comparable, V any](maps ...map[K]V) map[K]V {
@@ -249,7 +295,8 @@ func getMidSectionWeights(args WindowArrangementArgs) (int, int) {
 		mainSectionWeight = sideSectionWeight * 5 // need to shrink side panel to make way for main panels if side-by-side
 	}
 
-	if args.CurrentWindow == "main" || args.CurrentWindow == "secondary" {
+	if args.CurrentWindow == "main" || args.CurrentWindow == "secondary" ||
+		(args.CurrentWindow == "commits" && commitsWindowOnRight(args.UserConfig)) {
 		if args.ScreenMode == types.SCREEN_HALF || args.ScreenMode == types.SCREEN_FULL {
 			sideSectionWeight = 0
 		}
@@ -406,11 +453,11 @@ func getExtrasWindowSize(args WindowArrangementArgs) int {
 	return baseSize + frameSize
 }
 
-// The stash view by default only contains one line so that it's not hogging
-// too much space, but if you access it it should take up some space. This is
-// the default behaviour when accordion mode is NOT in effect. If it is in effect
-// then when it's accessed it will have weight 2, not 1. The window is passed in
-// because stash may be a tab of a window named after a different first tab.
+// A compact side window shows one content line until it is focused, then it
+// shares the leftover height. The branches and stash panels use this so the
+// files panel can fill the left column. In accordion mode a focused compact
+// window uses the expanded weight instead. The window is passed in because
+// stash may be a tab of a window named after a different first tab.
 func getDefaultStashWindowBox(args WindowArrangementArgs, window string) *boxlayout.Box {
 	box := &boxlayout.Box{Window: window}
 	// if the window showing stash is focused we should enlargen it
@@ -425,7 +472,7 @@ func getDefaultStashWindowBox(args WindowArrangementArgs, window string) *boxlay
 
 func sidePanelChildren(args WindowArrangementArgs) func(width int, height int) []*boxlayout.Box {
 	return func(width int, height int) []*boxlayout.Box {
-		windows := sideWindowNames(args.UserConfig)
+		windows := leftSideWindowNames(args.UserConfig)
 
 		// These thresholds were originally tuned for the default five side panels.
 		// With fewer panels there's less to fit, so scale them down proportionally
@@ -480,10 +527,10 @@ func sidePanelChildren(args WindowArrangementArgs) func(width int, height int) [
 			}
 
 			normalBox := func(window string) *boxlayout.Box {
-				// The status and stash sizing is a property of those views, so we key
-				// off the tab the window is currently showing, not the window's name
-				// (its first tab): otherwise grouping other tabs behind status or
-				// stash would wrongly impose their compact height on those tabs.
+				// Status and stash sizing follows the tab on screen, not the window
+				// name: a window named after stash that is showing another tab keeps
+				// that tab's height. The branches window is compact whichever tab it
+				// is showing, until the window itself is focused.
 				switch args.ActiveViewForWindow(window) {
 				case "status":
 					// The status view has a fixed height and is not expanded by accordion mode.
@@ -491,6 +538,9 @@ func sidePanelChildren(args WindowArrangementArgs) func(width int, height int) [
 				case "stash":
 					return accordionBox(getDefaultStashWindowBox(args, window))
 				default:
+					if window == "branches" {
+						return accordionBox(getDefaultStashWindowBox(args, window))
+					}
 					return accordionBox(&boxlayout.Box{Window: window, Weight: 1})
 				}
 			}
@@ -532,17 +582,18 @@ func sidePanelChildren(args WindowArrangementArgs) func(width int, height int) [
 // leftover, so it's shared among all panels by weight (which, in accordion mode,
 // gives the focused panel more of it).
 //
-// The status panel, and the stash panel when it's not focused, keep their
-// constant height and don't take part; ok is false when there are no panels to
-// size (so the caller falls back to the normal weighted layout).
+// The status panel, the branches panel, and the stash panel when it is not
+// focused, keep their constant height and don't take part; ok is false when
+// there are no panels to size (so the caller falls back to the normal weighted
+// layout).
 func shrinkToContentSidePanelBoxes(args WindowArrangementArgs, windows []string, height int) ([]*boxlayout.Box, bool) {
 	const frameSize = 2
 
 	accordionMode := args.UserConfig.Gui.ExpandFocusedSidePanel
 
 	// A flexible panel is one we size to its content. Fixed panels (the status
-	// panel, and the stash panel when unfocused) get their constant height and
-	// are excluded from the distribution below.
+	// panel, the branches panel, and the stash panel when unfocused) get their
+	// constant height and are excluded from the distribution below.
 	type flexiblePanel struct {
 		boxIndex int
 		desired  int // target height: content rows (see below) plus the frame
@@ -557,11 +608,10 @@ func shrinkToContentSidePanelBoxes(args WindowArrangementArgs, windows []string,
 	for i, window := range windows {
 		focused := window == args.CurrentSideWindow
 
-		// The status and stash sizing is a property of those views, so we key off
-		// the tab the window is currently showing, not the window's name (its first
-		// tab); see the comment on normalBox in sidePanelChildren.
+		// Status and stash sizing follows the tab on screen; the branches window
+		// stays compact until focused. See normalBox in sidePanelChildren.
 		activeView := args.ActiveViewForWindow(window)
-		if activeView == "status" || (activeView == "stash" && !focused) {
+		if activeView == "status" || (activeView == "stash" && !focused) || (window == "branches" && !focused) {
 			boxes[i] = &boxlayout.Box{Window: window, Size: 3}
 			availableForFlexible -= 3
 			continue

@@ -151,6 +151,9 @@ func Start(buildInfo *BuildInfo, integrationTest integrationTypes.IntegrationTes
 	}
 
 	if integrationTest != nil {
+		// The files panel defaults to a flat status list. These tests exercise
+		// the directory tree, so turn that back on before a test's own setup.
+		appConfig.GetUserConfig().Gui.ShowFileTree = true
 		integrationTest.SetupConfig(appConfig)
 
 		// Preserve the changes that the test setup just made to the config, so

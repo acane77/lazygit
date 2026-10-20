@@ -127,6 +127,92 @@ func BuildTreeFromCommitFiles(
 	return root
 }
 
+// BuildStatusSectionsFromFiles lists each file on its own line, grouped into
+// staged, then unstaged, then untracked. A path with both staged and unstaged
+// changes is listed under both of those headings. Merge conflicts stay in the
+// unstaged group: they are not a clean staged change until they are resolved.
+func BuildStatusSectionsFromFiles(
+	files []*models.File,
+	filter FileTreeDisplayFilter,
+	caseSensitive bool,
+	showRootItem bool,
+) *Node[models.File] {
+	grouped := map[StatusSection][]*Node[models.File]{}
+	for _, file := range files {
+		for _, section := range statusSectionsForFile(file, filter) {
+			grouped[section] = append(grouped[section], &Node[models.File]{
+				// Same internal path the directory tree uses, so toggling
+				// between the two layouts can find the selected file again.
+				File:          file,
+				path:          InternalTreePathForFilePath(file.Path, showRootItem),
+				StatusSection: section,
+			})
+		}
+	}
+
+	children := make([]*Node[models.File], 0, len(files))
+	for _, section := range []StatusSection{StatusSectionStaged, StatusSectionUnstaged, StatusSectionUntracked} {
+		nodes := grouped[section]
+		sortStatusSectionNodes(nodes, caseSensitive)
+		children = append(children, nodes...)
+	}
+
+	return &Node[models.File]{Children: children}
+}
+
+func statusSectionsForFile(file *models.File, filter FileTreeDisplayFilter) []StatusSection {
+	switch filter {
+	case DisplayStaged:
+		return []StatusSection{StatusSectionStaged}
+	case DisplayUnstaged:
+		return []StatusSection{StatusSectionUnstaged}
+	case DisplayUntracked:
+		return []StatusSection{StatusSectionUntracked}
+	case DisplayConflicted:
+		return []StatusSection{StatusSectionUnstaged}
+	case DisplayAll, DisplayTracked:
+		// Decide per side below.
+	}
+
+	// A conflict is shown once, under Unstaged, unless the user asked for
+	// staged files only (handled above).
+	if file.HasMergeConflicts {
+		return []StatusSection{StatusSectionUnstaged}
+	}
+
+	untracked := !file.Tracked && !file.HasStagedChanges
+	includeStaged := file.HasStagedChanges && filter != DisplayUnstaged
+	includeUnstaged := file.HasUnstagedChanges && !untracked && filter != DisplayStaged
+	includeUntracked := untracked && filter != DisplayStaged && filter != DisplayTracked
+
+	var sections []StatusSection
+	if includeStaged {
+		sections = append(sections, StatusSectionStaged)
+	}
+	if includeUnstaged {
+		sections = append(sections, StatusSectionUnstaged)
+	}
+	if includeUntracked {
+		sections = append(sections, StatusSectionUntracked)
+	}
+	if len(sections) == 0 {
+		sections = append(sections, StatusSectionUntracked)
+	}
+	return sections
+}
+
+func sortStatusSectionNodes(nodes []*Node[models.File], caseSensitive bool) {
+	sort.SliceStable(nodes, func(i, j int) bool {
+		a := nodes[i].GetPath()
+		b := nodes[j].GetPath()
+		if !caseSensitive {
+			a = strings.ToLower(a)
+			b = strings.ToLower(b)
+		}
+		return a < b
+	})
+}
+
 func BuildFlatTreeFromFiles(
 	files []*models.File,
 	showRootItem bool,

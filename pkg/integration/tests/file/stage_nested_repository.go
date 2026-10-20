@@ -26,6 +26,7 @@ var StageNestedRepository = NewIntegrationTest(NewIntegrationTestArgs{
 		t.Views().Files().
 			IsFocused().
 			Lines(
+				Equals("─── Untracked"),
 				Equals("?? file").IsSelected(),
 				Equals("?? modules/sub (removed submodule)"),
 			).
@@ -41,10 +42,12 @@ var StageNestedRepository = NewIntegrationTest(NewIntegrationTestArgs{
 			// Staging all files works if the nested repository is filtered out
 			FilterOrSearch("file").
 			Lines(
+				Equals("─── Untracked"),
 				Equals("?? file").IsSelected(),
 			).
 			Press(keys.Files.ToggleStagedAll).
 			Lines(
+				Equals("─── Staged"),
 				Equals("A  file").IsSelected(),
 			)
 	},

@@ -27,12 +27,14 @@ var FilterFiles = NewIntegrationTest(NewIntegrationTestArgs{
 			).
 			Press(keys.Files.ToggleTreeView).
 			Lines(
+				Contains(`Untracked`),
 				Contains(`folder1/apple-grape`).IsSelected(),
 				Contains(`folder1/apple-orange`),
 				Contains(`folder1/grape-orange`),
 			).
 			FilterOrSearch("apple").
 			Lines(
+				Contains(`Untracked`),
 				Contains(`folder1/apple-grape`).IsSelected(),
 				Contains(`folder1/apple-orange`),
 			).
@@ -45,12 +47,14 @@ var FilterFiles = NewIntegrationTest(NewIntegrationTestArgs{
 			).
 			Press(keys.Files.ToggleTreeView).
 			Lines(
+				Contains(`Untracked`),
 				Contains(`folder1/apple-grape`).IsSelected(),
 				Contains(`folder1/apple-orange`),
 			).
 			NavigateToLine(Contains(`folder1/apple-orange`)).
 			Press(keys.Universal.Return).
 			Lines(
+				Contains(`Untracked`),
 				Contains(`folder1/apple-grape`),
 				// selection is retained after escaping filter mode
 				Contains(`folder1/apple-orange`).IsSelected(),

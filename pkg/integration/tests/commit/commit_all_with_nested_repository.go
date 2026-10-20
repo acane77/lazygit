@@ -21,6 +21,7 @@ var CommitAllWithNestedRepository = NewIntegrationTest(NewIntegrationTestArgs{
 		t.Views().Files().
 			IsFocused().
 			Lines(
+				Equals("─── Untracked"),
 				Equals("?? file").IsSelected(),
 				Equals("?? nested (nested repository)"),
 			).
@@ -40,6 +41,7 @@ var CommitAllWithNestedRepository = NewIntegrationTest(NewIntegrationTestArgs{
 					Confirm()
 			}).
 			Lines(
+				Equals("─── Untracked"),
 				Equals("?? nested (nested repository)").IsSelected(),
 			)
 

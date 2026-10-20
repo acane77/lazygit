@@ -9,6 +9,17 @@ import (
 	"github.com/samber/lo"
 )
 
+func fileSectionLabel(c *ContextCommon, section filetree.StatusSection) string {
+	switch section {
+	case filetree.StatusSectionStaged:
+		return c.Tr.FilesSectionStaged
+	case filetree.StatusSectionUnstaged:
+		return c.Tr.FilesSectionUnstaged
+	default:
+		return c.Tr.FilesSectionUntracked
+	}
+}
+
 type WorkingTreeContext struct {
 	*filetree.FileTreeViewModel
 	*ListContextTrait
@@ -30,6 +41,7 @@ func NewWorkingTreeContext(c *ContextCommon) *WorkingTreeContext {
 		c.Common,
 		c.UserConfig().Gui.ShowFileTree,
 	)
+	viewModel.SetGroupByStatus(true)
 
 	getDisplayStrings := func(_ int, _ int) [][]string {
 		showFileIcons := icons.IsIconEnabled() && c.UserConfig().Gui.ShowFileIcons
@@ -38,6 +50,28 @@ func NewWorkingTreeContext(c *ContextCommon) *WorkingTreeContext {
 		return lo.Map(lines, func(line string, _ int) []string {
 			return []string{line}
 		})
+	}
+
+	getNonModelItems := func() []*NonModelItem {
+		if !viewModel.GroupsByStatus() {
+			return nil
+		}
+
+		var items []*NonModelItem
+		last := filetree.StatusSectionNone
+		for i, node := range viewModel.GetAllItems() {
+			section := node.StatusSection
+			if section == last || section == filetree.StatusSectionNone {
+				continue
+			}
+			last = section
+			items = append(items, &NonModelItem{
+				Index: i,
+				Content: presentation.StyleFileSectionHeader(
+					section, formatListSectionHeader(fileSectionLabel(c, section))),
+			})
+		}
+		return items
 	}
 
 	ctx := &WorkingTreeContext{
@@ -53,6 +87,7 @@ func NewWorkingTreeContext(c *ContextCommon) *WorkingTreeContext {
 			ListRenderer: ListRenderer{
 				list:              viewModel,
 				getDisplayStrings: getDisplayStrings,
+				getNonModelItems:  getNonModelItems,
 			},
 			c: c,
 		},

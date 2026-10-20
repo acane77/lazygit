@@ -30,6 +30,7 @@ var SpaceOnNonTextualConflict = NewIntegrationTest(NewIntegrationTestArgs{
 		t.Views().Files().
 			IsFocused().
 			Lines(
+				Equals("─── Unstaged"),
 				Contains("DU bar"),
 				Contains("UD foo"),
 			).

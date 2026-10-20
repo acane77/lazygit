@@ -630,7 +630,7 @@
             "$ref": "#/$defs/SidePanel"
           },
           "type": "array",
-          "description": "The side panels, in the order they appear from top to bottom.\nEach entry is a list of one or more names that share a single panel as tabs (cycle through them with the next-tab/previous-tab keys).\nOmit a name to hide it; give a name its own one-element list to promote a tab to a top-level panel.\nValid names are: 'status', 'files', 'worktrees', 'submodules', 'branches', 'remotes', 'tags', 'commits', 'reflog', 'stash'. 'files', 'branches', and 'commits' must always be included; they can't be hidden.",
+          "description": "The side panels, in the order they appear from top to bottom.\nEach entry is a list of one or more names that share a single panel as tabs (cycle through them with the next-tab/previous-tab keys).\nOmit a name to hide it; give a name its own one-element list to promote a tab to a top-level panel.\nValid names are: 'status', 'files', 'worktrees', 'submodules', 'branches', 'remotes', 'tags', 'commits', 'reflog', 'stash'. 'files', 'branches', and 'commits' must always be included; they can't be hidden.\nA panel whose first tab is commits is drawn above the diff, at about 30% of that column, instead of in this list's vertical stack.\nThe branches panel stays one line tall until it is focused.",
           "default": [
             [
               "status"
@@ -1154,8 +1154,8 @@
         },
         "showFileTree": {
           "type": "boolean",
-          "description": "If true, display the files in the file views as a tree. If false, display the files as a flat list.\nThis can be toggled from within Lazygit with the '`' key, but that will not change the default.",
-          "default": true
+          "description": "If true, display the files in the file views as a tree. If false, display them as a flat list. The files panel's flat list is grouped under Staged, Unstaged and Untracked headings, with one line per changed file.\nThis can be toggled from within Lazygit with the '`' key, but that will not change the default.",
+          "default": false
         },
         "showRootItemInFileTree": {
           "type": "boolean",
@@ -1190,7 +1190,7 @@
         "showCommandLog": {
           "type": "boolean",
           "description": "If true, show the command log",
-          "default": true
+          "default": false
         },
         "showBottomLine": {
           "type": "boolean",

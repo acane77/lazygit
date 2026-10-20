@@ -23,6 +23,7 @@ var DiscardRangeWithWorktree = NewIntegrationTest(NewIntegrationTestArgs{
 		t.Views().Files().
 			IsFocused().
 			Lines(
+				Equals("─── Untracked"),
 				Equals("?? nested-worktree (worktree)").IsSelected(),
 				Equals("?? untracked-file"),
 			).

@@ -41,6 +41,7 @@ var SymlinkIntoRepoSubdir = NewIntegrationTest(NewIntegrationTestArgs{
 		t.Views().Files().
 			IsFocused().
 			Lines(
+				Equals("─── Unstaged"),
 				Contains(" M a/b/c/blah"), // shows as modified
 			).
 			PressPrimaryAction().

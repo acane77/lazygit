@@ -437,6 +437,22 @@ func (self *FilesController) renderWorkingTreeDiff(node *filetree.FileNode) {
 	alwaysSplit := self.c.UserConfig().Gui.SplitDiff == "always"
 	showStaged := node.GetHasStagedChanges() || alwaysSplit
 	showUnstaged := node.GetHasUnstagedChanges() || alwaysSplit || !showStaged
+	// A row under a status heading shows that side. A file listed under both
+	// headings therefore opens the diff for the heading the cursor is on.
+	switch node.StatusSection {
+	case filetree.StatusSectionStaged:
+		if !alwaysSplit {
+			showUnstaged = false
+			showStaged = true
+		}
+	case filetree.StatusSectionUnstaged, filetree.StatusSectionUntracked:
+		if !alwaysSplit {
+			showStaged = false
+			showUnstaged = true
+		}
+	case filetree.StatusSectionNone:
+		// No heading: keep whichever sides the file itself has.
+	}
 
 	// While the main view is focused to act on this diff, it may have to be git's own
 	// rather than the diff renderer's; both panes have to agree about that.
@@ -596,6 +612,12 @@ func (self *FilesController) toggleStaged(
 			return err
 		}
 		shouldStage = !noOp
+	}
+
+	// On the Staged heading, space unstages that side even when the file also
+	// has unstaged changes. Those stay listed under Unstaged.
+	if allInStatusSection(nodes, filetree.StatusSectionStaged) {
+		shouldStage = false
 	}
 
 	if shouldStage {
@@ -1670,9 +1692,35 @@ func (self *FilesController) fetch() error {
 // So we just need to filter out any nodes from the selection that are descendants
 // of other nodes
 func normalisedSelectedNodes(selectedNodes []*filetree.FileNode) []*filetree.FileNode {
-	return lo.Filter(selectedNodes, func(node *filetree.FileNode, _ int) bool {
+	selectedNodes = lo.Filter(selectedNodes, func(node *filetree.FileNode, _ int) bool {
 		return !isDescendentOfSelectedNodes(node, selectedNodes)
 	})
+
+	// The same path can be selected twice when it is listed under two headings.
+	seenPaths := set.New[string]()
+	return lo.Filter(selectedNodes, func(node *filetree.FileNode, _ int) bool {
+		if !node.IsFile() {
+			return true
+		}
+		path := node.GetPath()
+		if seenPaths.Includes(path) {
+			return false
+		}
+		seenPaths.Add(path)
+		return true
+	})
+}
+
+func allInStatusSection(nodes []*filetree.FileNode, section filetree.StatusSection) bool {
+	if len(nodes) == 0 || section == filetree.StatusSectionNone {
+		return false
+	}
+	for _, node := range nodes {
+		if node.StatusSection != section {
+			return false
+		}
+	}
+	return true
 }
 
 // NOTE: there's a duplicate of this function in commits_files_controller.go; if you make

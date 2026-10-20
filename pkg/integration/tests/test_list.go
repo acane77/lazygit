@@ -271,6 +271,7 @@ var tests = []*components.IntegrationTest{
 	file.StageNestedRepository,
 	file.StageRangeSelect,
 	file.StagedChangesInLowerPane,
+	file.StatusSections,
 	filter_and_search.FilterByFileStatus,
 	filter_and_search.FilterCommitFiles,
 	filter_and_search.FilterCommitFilesToggleDirectory,

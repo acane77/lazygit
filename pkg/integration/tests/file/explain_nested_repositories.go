@@ -29,6 +29,7 @@ var ExplainNestedRepositories = NewIntegrationTest(NewIntegrationTestArgs{
 		t.Views().Files().
 			IsFocused().
 			Lines(
+				Equals("─── Untracked"),
 				Equals("?? modules/sub (removed submodule)").IsSelected(),
 				Equals("?? nested (nested repository)"),
 				Equals("?? worktree (worktree)"),

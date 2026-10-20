@@ -49,6 +49,7 @@ var ResolveConflictRewoundSide = NewIntegrationTest(NewIntegrationTestArgs{
 		t.Views().Files().
 			Focus().
 			Lines(
+				Equals("─── Unstaged"),
 				Contains("UU sub_path (submodule)").IsSelected(),
 			).
 			Tap(func() {

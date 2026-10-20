@@ -46,6 +46,7 @@ var ResolveConflict = NewIntegrationTest(NewIntegrationTestArgs{
 		t.Views().Files().
 			Focus().
 			Lines(
+				Equals("─── Unstaged"),
 				Contains("UU my_submodule_path (submodule)").IsSelected(),
 			).
 			Tap(func() {
@@ -76,6 +77,7 @@ var ResolveConflict = NewIntegrationTest(NewIntegrationTestArgs{
 					Confirm()
 			}).
 			Lines(
+				Equals("─── Staged"),
 				Contains("M  my_submodule_path (submodule)").IsSelected(),
 			)
 	},

@@ -110,6 +110,8 @@ type GuiConfig struct {
 	// Each entry is a list of one or more names that share a single panel as tabs (cycle through them with the next-tab/previous-tab keys).
 	// Omit a name to hide it; give a name its own one-element list to promote a tab to a top-level panel.
 	// Valid names are: 'status', 'files', 'worktrees', 'submodules', 'branches', 'remotes', 'tags', 'commits', 'reflog', 'stash'. 'files', 'branches', and 'commits' must always be included; they can't be hidden.
+	// A panel whose first tab is commits is drawn above the diff, at about 30% of that column, instead of in this list's vertical stack.
+	// The branches panel stays one line tall until it is focused.
 	SidePanels []SidePanel `yaml:"sidePanels"`
 	// Sometimes the main window is split in two (e.g. when the selected file has both staged and unstaged changes). This setting controls how the two sections are split.
 	// Options are:
@@ -152,7 +154,7 @@ type GuiConfig struct {
 	CommitLength CommitLengthConfig `yaml:"commitLength"`
 	// If true, show the '5 of 20' footer at the bottom of list views
 	ShowListFooter bool `yaml:"showListFooter"`
-	// If true, display the files in the file views as a tree. If false, display the files as a flat list.
+	// If true, display the files in the file views as a tree. If false, display them as a flat list. The files panel's flat list is grouped under Staged, Unstaged and Untracked headings, with one line per changed file.
 	// This can be toggled from within Lazygit with the '`' key, but that will not change the default.
 	ShowFileTree bool `yaml:"showFileTree"`
 	// If true, add a "/" root item in the file tree representing the root of the repository. It is only added when necessary, i.e. when there is more than one item at top level.
@@ -919,10 +921,10 @@ func GetDefaultConfigForPlatform(platform string) *UserConfig {
 			CommitLength:                        CommitLengthConfig{Show: true},
 			SkipNoStagedFilesWarning:            false,
 			ShowListFooter:                      true,
-			ShowCommandLog:                      true,
+			ShowCommandLog:                      false,
 			ShowBottomLine:                      true,
 			ShowPanelJumps:                      true,
-			ShowFileTree:                        true,
+			ShowFileTree:                        false,
 			ShowRootItemInFileTree:              true,
 			FileTreeSortOrder:                   "mixed",
 			FileTreeSortCaseSensitive:           true,

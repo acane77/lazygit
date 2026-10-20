@@ -22,6 +22,16 @@ const (
 	DisplayConflicted
 )
 
+// StatusSection is the heading a working-tree row is listed under.
+type StatusSection int
+
+const (
+	StatusSectionNone StatusSection = iota
+	StatusSectionStaged
+	StatusSectionUnstaged
+	StatusSectionUntracked
+)
+
 type ITree[T any] interface {
 	InTreeMode() bool
 	ExpandToPath(path string)
@@ -53,6 +63,8 @@ type IFileTree interface {
 	GetRoot() *FileNode
 	SetTextFilter(filter string, useFuzzySearch bool)
 	GetTextFilter() string
+	SetGroupByStatus(groupByStatus bool)
+	GroupsByStatus() bool
 }
 
 type FileTree struct {
@@ -69,6 +81,9 @@ type FileTree struct {
 	collapsedPaths  *CollapsedPaths
 	textFilter      string
 	useFuzzySearch  bool
+	// When set, flat mode lists files under Staged, Unstaged and Untracked
+	// headings instead of one mixed list. Tree mode ignores it.
+	groupByStatus bool
 }
 
 var _ IFileTree = &FileTree{}
@@ -86,6 +101,17 @@ func NewFileTree(getFiles func() []*models.File, common *common.Common, showTree
 
 func (self *FileTree) InTreeMode() bool {
 	return self.showTree
+}
+
+func (self *FileTree) SetGroupByStatus(groupByStatus bool) {
+	self.groupByStatus = groupByStatus
+	if self.tree != nil {
+		self.SetTree()
+	}
+}
+
+func (self *FileTree) GroupsByStatus() bool {
+	return self.groupByStatus && !self.showTree
 }
 
 func (self *FileTree) ExpandToPath(path string) {
@@ -202,6 +228,8 @@ func (self *FileTree) SetTree() {
 	cmp := NodeSortComparator[models.File](guiConfig.FileTreeSortOrder, guiConfig.FileTreeSortCaseSensitive)
 	if self.showTree {
 		self.tree = BuildTreeFromFiles(filesForDisplay, showRootItem, cmp)
+	} else if self.groupByStatus {
+		self.tree = BuildStatusSectionsFromFiles(filesForDisplay, self.filter, guiConfig.FileTreeSortCaseSensitive, showRootItem)
 	} else {
 		self.tree = BuildFlatTreeFromFiles(filesForDisplay, showRootItem, cmp)
 	}

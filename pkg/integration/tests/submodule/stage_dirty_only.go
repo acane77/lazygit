@@ -25,6 +25,7 @@ var StageDirtyOnly = NewIntegrationTest(NewIntegrationTestArgs{
 	Run: func(t *TestDriver, keys config.KeybindingConfig) {
 		t.Views().Files().Focus().
 			Lines(
+				Equals("─── Unstaged"),
 				Equals(" M my_submodule_path (submodule)").IsSelected(),
 			).
 			PressPrimaryAction().
@@ -36,6 +37,7 @@ var StageDirtyOnly = NewIntegrationTest(NewIntegrationTestArgs{
 			}).
 			// The status is unchanged: nothing got staged.
 			Lines(
+				Equals("─── Unstaged"),
 				Equals(" M my_submodule_path (submodule)").IsSelected(),
 			).
 			// Pressing "stage all" must behave the same way.
@@ -47,6 +49,7 @@ var StageDirtyOnly = NewIntegrationTest(NewIntegrationTestArgs{
 					Confirm()
 			}).
 			Lines(
+				Equals("─── Unstaged"),
 				Equals(" M my_submodule_path (submodule)").IsSelected(),
 			)
 	},

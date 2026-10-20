@@ -1,6 +1,7 @@
 package filetree
 
 import (
+	"fmt"
 	"path"
 	"slices"
 	"strings"
@@ -35,6 +36,12 @@ type Node[T any] struct {
 	// number of times a 'compression' like the above has happened, where two
 	// nodes are squished into one.
 	CompressionLevel int
+
+	// StatusSection is set when one path is listed under more than one status
+	// heading. A file with both staged and unstaged changes then has two rows,
+	// and this says which heading a row belongs to. Zero on directory nodes
+	// and on commit-file trees.
+	StatusSection StatusSection
 }
 
 var _ types.ListItem = &Node[models.File]{}
@@ -386,7 +393,12 @@ func (self *Node[T]) GetLeaves() []*Node[T] {
 }
 
 func (self *Node[T]) ID() string {
-	return self.GetPath()
+	path := self.GetPath()
+	if self.StatusSection != StatusSectionNone {
+		// The same path can occupy two headings, so the id has to name the heading too.
+		return fmt.Sprintf("%d:%s", self.StatusSection, path)
+	}
+	return path
 }
 
 func (self *Node[T]) Description() string {

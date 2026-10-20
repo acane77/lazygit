@@ -28,30 +28,40 @@ var Stage = NewIntegrationTest(NewIntegrationTestArgs{
 	Run: func(t *TestDriver, keys config.KeybindingConfig) {
 		t.Views().Files().Focus().
 			Lines(
+				Equals("─── Unstaged"),
 				Equals(" M my_submodule_path (submodule)").IsSelected(),
 			).
 			// Staging the submodule stages the new commit, but the dirty
-			// content remains unstaged, leaving us at "MM".
+			// content remains unstaged, so the submodule is listed under both
+			// headings as "MM". The cursor stays on the unstaged row.
 			PressPrimaryAction().
 			Lines(
+				Equals("─── Staged"),
+				Equals("MM my_submodule_path (submodule)"),
+				Equals("─── Unstaged"),
 				Equals("MM my_submodule_path (submodule)").IsSelected(),
 			).
 			// Pressing again must unstage the submodule, taking us back to
 			// " M" rather than trying (and failing) to stage the dirty content.
 			PressPrimaryAction().
 			Lines(
+				Equals("─── Unstaged"),
 				Equals(" M my_submodule_path (submodule)").IsSelected(),
 			).
 			// The same has to hold for the stage-all keybinding, which shares
 			// the same decision logic: it stages the new commit...
 			Press(keys.Files.ToggleStagedAll).
 			Lines(
+				Equals("─── Staged"),
+				Equals("MM my_submodule_path (submodule)"),
+				Equals("─── Unstaged"),
 				Equals("MM my_submodule_path (submodule)").IsSelected(),
 			).
 			// ...and then unstages it again rather than getting stuck on the
 			// dirty content.
 			Press(keys.Files.ToggleStagedAll).
 			Lines(
+				Equals("─── Unstaged"),
 				Equals(" M my_submodule_path (submodule)").IsSelected(),
 			)
 	},

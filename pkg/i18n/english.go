@@ -89,6 +89,9 @@ type TranslationSet struct {
 	FilterLabelTrackedFiles               string
 	FilterLabelUntrackedFiles             string
 	FilterLabelConflictingFiles           string
+	FilesSectionStaged                    string
+	FilesSectionUnstaged                  string
+	FilesSectionUntracked                 string
 	MergeConflictsTitle                   string
 	MergeConflictDescription_DD           string
 	MergeConflictDescription_AU           string
@@ -1264,7 +1267,7 @@ func EnglishTranslationSet() *TranslationSet {
 		ToggleStagedAll:                      "Stage all",
 		ToggleStagedAllTooltip:               "Toggle staged/unstaged for all files in working tree.",
 		ToggleTreeView:                       "Toggle file tree view",
-		ToggleTreeViewTooltip:                "Toggle file view between flat and tree layout. Flat layout shows all file paths in a single list, tree layout groups files by directory.\n\nThe default can be changed in the config file with the key 'gui.showFileTree'.",
+		ToggleTreeViewTooltip:                "Toggle file view between flat and tree layout. Flat layout shows all file paths in a single list; in the files panel that list is grouped under Staged, Unstaged and Untracked. Tree layout groups files by directory.\n\nThe default can be changed in the config file with the key 'gui.showFileTree'.",
 		OpenDiffTool:                         "Open external diff tool (git difftool)",
 		OpenMergeTool:                        "Open external merge tool",
 		Refresh:                              "Refresh",
@@ -1337,6 +1340,9 @@ func EnglishTranslationSet() *TranslationSet {
 		FilterLabelTrackedFiles:              "(only tracked)",
 		FilterLabelUntrackedFiles:            "(only untracked)",
 		FilterLabelConflictingFiles:          "(only conflicting)",
+		FilesSectionStaged:                   "Staged",
+		FilesSectionUnstaged:                 "Unstaged",
+		FilesSectionUntracked:                "Untracked",
 		NoChangedFiles:                       "No changed files",
 		SoftReset:                            "Soft reset",
 		AlreadyCheckedOutBranch:              "You have already checked out this branch",
